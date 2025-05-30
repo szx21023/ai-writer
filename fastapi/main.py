@@ -10,7 +10,7 @@ class AppFactory(BaseFactory):
         app = super().create_app()
 
         @app.get("/hello")
-        def hello():
+        async def hello():
             return {
                 'data': {
                     'version': version
