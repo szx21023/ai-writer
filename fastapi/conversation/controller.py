@@ -12,7 +12,7 @@ async def get_conversation(
         db: AsyncSession = Depends(get_db)
     ):
     """
-    get customer api
+    get conversation api
     """
 
     result = await ConversationService.get_conversation(db)
@@ -26,7 +26,7 @@ async def create_conversation(
         db: AsyncSession = Depends(get_db)
     ):
     """
-    post customer api
+    post conversation api
     """
 
     title = schema.get('title')
@@ -42,7 +42,7 @@ async def update_conversation(
         db: AsyncSession = Depends(get_db)
     ):
     """
-    patch customer api
+    patch conversation api
     """
 
     title = schema.get('title')
@@ -56,7 +56,7 @@ async def delete_conversation(
     ):
 
     """
-    delete customer api
+    delete conversation api
     """
     result = await ConversationService.delete_conversation(db, id=conversation_id)
     return result
