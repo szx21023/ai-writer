@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>劇情編輯器</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      background-color: #fafafa;
+      padding: 50px;
+    }
+
+    .container {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .content-box {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px;
+      background-color: #fefefe;
+      white-space: pre-wrap;
+      margin-right: 60px;
+    }
+
+    .edit-button {
+      position: absolute;
+      right: 40px;
+      margin-top: -40px;
+      padding: 4px 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .edit-button:hover {
+      background-color: #f0f0f0;
+    }
+
+    .block {
+      position: relative;
+      margin-bottom: 40px;
+    }
+
+    .footer-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .footer-buttons button {
+      font-size: 16px;
+      padding: 6px 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .footer-buttons button:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>✏️ 劇情編輯器（MVP with API）</h1>
+
+    <div class="block">
+      <div class="section">
+        <div class="section-title">User</div>
+        <div class="content-box">主角來到一座被迷霧籠罩的森林。</div>
+        <button class="edit-button">✏️ 編輯</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">LLM</div>
+        <div class="content-box">他嚴受到一股詭異的氣息，彷彿有什麼在注視著他。</div>
+        <button class="edit-button">✏️ 編輯</button>
+      </div>
+    </div>
+
+    <div class="footer-buttons">
+      <button>➕ 新增</button>
+      <button>🗑️ 刪除</button>
+    </div>
+  </div>
+
+</body>
+</html>
