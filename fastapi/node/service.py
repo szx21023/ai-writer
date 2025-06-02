@@ -20,18 +20,18 @@ class NodeService:
         return nodes
 
     @staticmethod
-    async def create_node(db: AsyncSession, conversation_id, role, content, order) -> Node:
+    async def create_node(db: AsyncSession, conversation_id, prompt, content, order) -> Node:
         """
         Create a new node.
         """
-        node = Node(conversation_id=conversation_id, role=role, content=content, order=order)
+        node = Node(conversation_id=conversation_id, prompt=prompt, content=content, order=order)
         db.add(node)           # 將對象加入 session
         await db.commit()      # 提交到資料庫
         await db.refresh(node)  # 更新對象資料（例如拿到自動產生的 ID）
         return node
     
     @staticmethod
-    async def update_node(db: AsyncSession, id: int, conversation_id, role, content, order) -> Node:
+    async def update_node(db: AsyncSession, id: int, conversation_id, prompt, content, order) -> Node:
         """
         Update an existing node.
         """
@@ -43,7 +43,7 @@ class NodeService:
             raise ValueError("Node not found")
 
         node.conversation_id = conversation_id
-        node.role = role
+        node.prompt = prompt
         node.content = content
         node.order = order
         await db.commit()

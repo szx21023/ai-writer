@@ -22,7 +22,7 @@ async def get_node(
 async def create_node( 
         schema = Body(example={
             'conversation_id': 1,
-            'role': 'llm',
+            'prompt': 'it should be a story',
             'content': 'this is a content',
             'order': 1
         }),
@@ -33,10 +33,10 @@ async def create_node(
     """
 
     conversation_id = schema.get('conversation_id')
-    role = schema.get('role')
+    prompt = schema.get('prompt')
     content = schema.get('content')
     order = schema.get('order')
-    result = await NodeService.create_node(db, conversation_id=conversation_id, role=role, content=content, order=order)
+    result = await NodeService.create_node(db, conversation_id=conversation_id, prompt=prompt, content=content, order=order)
     return result
 
 @router.patch("/{node_id}")
@@ -44,7 +44,7 @@ async def update_node(
         node_id: int,
         schema = Body(example={
             'conversation_id': 1,
-            'role': 'llm',
+            'prompt': 'it should be a story',
             'content': 'this is a content',
             'order': 1
         }),
@@ -55,10 +55,10 @@ async def update_node(
     """
 
     conversation_id = schema.get('conversation_id')
-    role = schema.get('role')
+    prompt = schema.get('prompt')
     content = schema.get('content')
     order = schema.get('order')
-    result = await NodeService.update_node(db, id=node_id, conversation_id=conversation_id, role=role, content=content, order=order)
+    result = await NodeService.update_node(db, id=node_id, conversation_id=conversation_id, prompt=prompt, content=content, order=order)
     return result
 
 @router.delete("/{node_id}")
