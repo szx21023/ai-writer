@@ -29,24 +29,19 @@
       margin-bottom: 30px;
     }
 
-    .section-title {
-      font-weight: bold;
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 10px;
     }
 
-    .content-box {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 12px;
-      background-color: #fefefe;
-      white-space: pre-wrap;
-      margin-right: 60px;
+    .section-title {
+      font-weight: bold;
+      font-size: 16px;
     }
 
     .edit-button {
-      position: absolute;
-      right: 40px;
-      margin-top: -40px;
       padding: 4px 10px;
       font-size: 14px;
       border-radius: 6px;
@@ -59,9 +54,21 @@
       background-color: #f0f0f0;
     }
 
-    .block {
-      position: relative;
-      margin-bottom: 40px;
+    .content-box,
+    textarea {
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px;
+      background-color: #fefefe;
+      white-space: pre-wrap;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 100px;
     }
 
     .footer-buttons {
@@ -89,18 +96,20 @@
   <div class="container">
     <h1>✏️ 劇情編輯器（MVP with API）</h1>
 
-    <div class="block">
-      <div class="section">
+    <div class="section">
+      <div class="section-header">
         <div class="section-title">User</div>
-        <div class="content-box">主角來到一座被迷霧籠罩的森林。</div>
-        <button class="edit-button">✏️ 編輯</button>
+        <button class="edit-button" onclick="toggleEdit(this, 'user-content')">✏️ 編輯</button>
       </div>
+      <div class="content-box" id="user-content">主角來到一座被迷霧籠罩的森林。</div>
+    </div>
 
-      <div class="section">
+    <div class="section">
+      <div class="section-header">
         <div class="section-title">LLM</div>
-        <div class="content-box">他嚴受到一股詭異的氣息，彷彿有什麼在注視著他。</div>
-        <button class="edit-button">✏️ 編輯</button>
+        <button class="edit-button" onclick="toggleEdit(this, 'llm-content')">✏️ 編輯</button>
       </div>
+      <div class="content-box" id="llm-content">他嚴受到一股詭異的氣息，彷彿有什麼在注視著他。</div>
     </div>
 
     <div class="footer-buttons">
@@ -108,6 +117,29 @@
       <button>🗑️ 刪除</button>
     </div>
   </div>
+
+  <script>
+    function toggleEdit(button, contentId) {
+      const container = document.getElementById(contentId);
+
+      if (container.tagName === 'DIV') {
+        const text = container.innerText;
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.id = contentId;
+        container.replaceWith(textarea);
+        button.innerText = '💾 儲存';
+      } else {
+        const newText = container.value;
+        const div = document.createElement('div');
+        div.className = 'content-box';
+        div.id = contentId;
+        div.innerText = newText;
+        container.replaceWith(div);
+        button.innerText = '✏️ 編輯';
+      }
+    }
+  </script>
 
 </body>
 </html>
