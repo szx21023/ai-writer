@@ -3,7 +3,7 @@ from fastapi_basic.base_factory import BaseFactory
 from database import engine, Base
 from version import version
 from conversation import init_app as init_conversation_app
-from llm_chat import init_app as init_llm_chat_app
+from ext.openai import init_app as init_openai_app
 from node import init_app as init_node_app
 
 class AppFactory(BaseFactory):
@@ -19,18 +19,19 @@ class AppFactory(BaseFactory):
         @app.on_event("startup")
         async def initail_app():
             await init_conversation_app(app)
-            await init_llm_chat_app(app)
             await init_node_app(app)
+
+            app.state.llm_client = await init_openai_app(app)
 
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
 
         @app.get("/hello")
         async def hello():
-            from llm_chat.service import LlmChatService
+            from ext.openai.service import OpenaiService
 
-            prompt = "英文的謝謝你怎麼說?"
-            result = await LlmChatService.get_completion(prompt)
+            prompt = "英文的你好嗎怎麼說?"
+            result = await OpenaiService.get_completion(prompt)
             print(result)
 
             return {

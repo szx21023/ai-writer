@@ -1,8 +1,7 @@
 from main import app
 
-class LlmChatService:
+class OpenaiService:
     @staticmethod
-
     async def get_completion(prompt: str):
         completion = app.state.llm_client.chat.completions.create(
             model="gpt-4o-mini",
