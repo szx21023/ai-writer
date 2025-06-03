@@ -28,12 +28,6 @@ class AppFactory(BaseFactory):
 
         @app.get("/hello")
         async def hello():
-            from ext.openai.service import OpenaiService
-
-            prompt = "英文的你好嗎怎麼說?"
-            result = await OpenaiService.get_completion(prompt)
-            print(result)
-
             return {
                 'data': {
                     'version': version
