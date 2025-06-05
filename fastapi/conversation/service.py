@@ -5,6 +5,7 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from exception import RequiredColumnMissingException
 from .model import Conversation
 from .schema import ConversationSchema
 
@@ -25,6 +26,11 @@ class ConversationService:
         """
         Create a new conversation.
         """
+        if not title:
+            message = f"title: {title}"
+            exception = RequiredColumnMissingException(message=message)
+            raise exception
+
         schema = ConversationSchema()
         data = schema.load({"title": title})
 
