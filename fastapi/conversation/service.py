@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .model import Conversation
+from .schema import ConversationSchema
 
 class ConversationService:
     @staticmethod
@@ -24,7 +25,10 @@ class ConversationService:
         """
         Create a new conversation.
         """
-        conversation = Conversation(title=title)
+        schema = ConversationSchema()
+        data = schema.load({"title": title})
+
+        conversation = Conversation(**data)
         db.add(conversation)           # 將對象加入 session
         await db.commit()              # 提交到資料庫
         await db.refresh(conversation)  # 更新對象資料（例如拿到自動產生的 ID）
