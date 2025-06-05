@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exception import RequiredColumnMissingException
+from .exception import ConversationAlreadyExistException
 from .model import Conversation
 from .schema import ConversationSchema
 
@@ -29,6 +30,11 @@ class ConversationService:
         if not title:
             message = f"title: {title}"
             exception = RequiredColumnMissingException(message=message)
+            raise exception
+
+        if conversation := await ConversationService.get_conversation_by_title(db, title):
+            message = f"title: {title}"
+            exception = ConversationAlreadyExistException(message=message)
             raise exception
 
         schema = ConversationSchema()
@@ -72,3 +78,14 @@ class ConversationService:
         await db.delete(conversation)
         await db.commit()
         return None
+
+    @staticmethod
+    async def get_conversation_by_title(db: AsyncSession, title: str) -> Conversation:
+        """
+        Get a conversation by title.
+        """
+
+        sql = select(Conversation).where(Conversation.title == title)
+        result = await db.execute(sql)
+        conversation = result.scalar_one_or_none()
+        return conversation
