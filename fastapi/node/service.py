@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from conversation.service import ConversationService
 from conversation.exception import ConversationNotFoundException
+from ext.openai.service import OpenaiService
 from exception import RequiredColumnMissingException
 from .exception import NodeSavedFailedException, NodeNotFoundException
 from .model import Node
@@ -38,6 +39,9 @@ class NodeService:
             message = f"conversation_id: {conversation_id}"
             exception = ConversationNotFoundException(message=message)
             raise exception
+
+        if prompt:
+            content = await OpenaiService.get_completion(prompt)  # 呼叫 OpenAI API 獲取回應
 
         schema = NodeSchema()
         data = schema.load({
