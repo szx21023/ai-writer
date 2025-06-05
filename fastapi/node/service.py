@@ -5,6 +5,7 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ext.openai.service import OpenaiService
 from .model import Node
 
 class NodeService:
@@ -24,7 +25,9 @@ class NodeService:
         """
         Create a new node.
         """
-        node = Node(conversation_id=conversation_id, prompt=prompt, content=content, order=order)
+
+        content = await OpenaiService.get_completion(prompt)  # 呼叫 OpenAI API 獲取回應
+        node = Node(conversation_id=conversation_id, prompt=prompt, content=str(content), order=order)
         db.add(node)           # 將對象加入 session
         await db.commit()      # 提交到資料庫
         await db.refresh(node)  # 更新對象資料（例如拿到自動產生的 ID）
