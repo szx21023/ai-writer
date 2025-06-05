@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exception import RequiredColumnMissingException
-from .exception import ConversationAlreadyExistException
+from .exception import ConversationAlreadyExistException, ConversationSavedFailedException
 from .model import Conversation
 from .schema import ConversationSchema
 
@@ -41,9 +41,18 @@ class ConversationService:
         data = schema.load({"title": title})
 
         conversation = Conversation(**data)
-        db.add(conversation)           # 將對象加入 session
-        await db.commit()              # 提交到資料庫
-        await db.refresh(conversation)  # 更新對象資料（例如拿到自動產生的 ID）
+        try:
+            db.add(conversation)            # 將對象加入 session
+            await db.commit()               # 提交到資料庫
+            await db.refresh(conversation)  # 更新對象資料（例如拿到自動產生的 ID）
+
+        except Exception as e:
+            db.rollback()  # 回滾事務
+
+            message = f"error: {e}"
+            exception = ConversationSavedFailedException(message=message)
+            raise exception
+
         return conversation
     
     @staticmethod
