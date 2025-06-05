@@ -8,6 +8,6 @@ class Conversation(Base):
     __tablename__ = "conversation"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    title: Mapped[str] = mapped_column(String(10), nullable=False)
+    title: Mapped[str] = mapped_column(String(10), nullable=False, unique=True)
     create_time = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     update_time = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
