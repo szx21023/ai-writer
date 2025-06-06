@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exception import RequiredColumnMissingException
-from .exception import ConversationAlreadyExistException, ConversationSavedFailedException
+from .exception import ConversationNotFoundException, ConversationAlreadyExistException, ConversationSavedFailedException
 from .model import Conversation
 from .schema import ConversationSchema
 
@@ -60,16 +60,37 @@ class ConversationService:
         """
         Update an existing conversation.
         """
-        sql = select(Conversation).where(Conversation.id == id)
-        result = await db.execute(sql)
-        conversation = result.scalar_one_or_none()
+        if not title:
+            message = f"title: {title}"
+            exception = RequiredColumnMissingException(message=message)
+            raise exception
 
-        if conversation is None:
-            raise ValueError("Conversation not found")
+        if conversation := await ConversationService.get_conversation_by_title(db, title):
+            message = f"title: {title}"
+            exception = ConversationAlreadyExistException(message=message)
+            raise exception
 
-        conversation.title = title
-        await db.commit()
-        await db.refresh(conversation)
+        if not(conversation := await ConversationService.get_conversation_by_id(db, id)):
+            message = f"id: {id}"
+            exception = ConversationNotFoundException(message=message)
+            raise exception
+
+        schema = ConversationSchema()
+        data = schema.load({"title": title})
+        for key, value in data.items():
+            setattr(conversation, key, value)
+
+        try:
+            await db.commit()
+            await db.refresh(conversation)
+
+        except Exception as e:
+            db.rollback()
+
+            message = f"error: {e}"
+            exception = ConversationSavedFailedException(message=message)
+            raise exception
+
         return conversation
     
     @staticmethod
@@ -87,6 +108,17 @@ class ConversationService:
         await db.delete(conversation)
         await db.commit()
         return None
+
+    @staticmethod
+    async def get_conversation_by_id(db: AsyncSession, id: int) -> Conversation:
+        """
+        Get a conversation by ID.
+        """
+
+        sql = select(Conversation).where(Conversation.id == id)
+        result = await db.execute(sql)
+        conversation = result.scalar_one_or_none()
+        return conversation
 
     @staticmethod
     async def get_conversation_by_title(db: AsyncSession, title: str) -> Conversation:
