@@ -47,7 +47,7 @@ class ConversationService:
             await db.refresh(conversation)  # 更新對象資料（例如拿到自動產生的 ID）
 
         except Exception as e:
-            db.rollback()  # 回滾事務
+            await db.rollback()             # 回滾事務
 
             message = f"error: {e}"
             exception = ConversationSavedFailedException(message=message)
@@ -85,7 +85,7 @@ class ConversationService:
             await db.refresh(conversation)
 
         except Exception as e:
-            db.rollback()
+            await db.rollback()
 
             message = f"error: {e}"
             exception = ConversationSavedFailedException(message=message)
@@ -108,7 +108,7 @@ class ConversationService:
             await db.commit()
 
         except Exception as e:
-            db.rollback()
+            await db.rollback()
 
             message = f"error: {e}"
             exception = ConversationSavedFailedException(message=message)
