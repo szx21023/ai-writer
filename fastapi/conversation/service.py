@@ -98,16 +98,23 @@ class ConversationService:
         """
         Delete a conversation.
         """
-        sql = select(Conversation).where(Conversation.id == id)
-        result = await db.execute(sql)
-        conversation = result.scalar_one_or_none()
+        if not(conversation := await ConversationService.get_conversation_by_id(db, id)):
+            message = f"id: {id}"
+            exception = ConversationNotFoundException(message=message)
+            raise exception
 
-        if conversation is None:
-            raise ValueError("Conversation not found")
+        try:
+            await db.delete(conversation)
+            await db.commit()
 
-        await db.delete(conversation)
-        await db.commit()
-        return None
+        except Exception as e:
+            db.rollback()
+
+            message = f"error: {e}"
+            exception = ConversationSavedFailedException(message=message)
+            raise exception
+
+        return conversation
 
     @staticmethod
     async def get_conversation_by_id(db: AsyncSession, id: int) -> Conversation:
