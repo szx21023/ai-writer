@@ -95,15 +95,22 @@ class NodeService:
         """
         Delete a conversation.
         """
-        sql = select(Node).where(Node.id == id)
-        result = await db.execute(sql)
-        node = result.scalar_one_or_none()
+        if not(node := await NodeService.get_node_by_id(db, id)):
+            message = f"id: {id}"
+            exception = NodeNotFoundException(message=message)
+            raise exception
 
-        if node is None:
-            raise ValueError("Node not found")
+        try:
+            await db.delete(node)
+            await db.commit()
 
-        await db.delete(node)
-        await db.commit()
+        except Exception as e:
+            await db.rollback()
+
+            message = f"error: {e}"
+            exception = NodeSavedFailedException(message=message)
+            raise exception
+
         return None
 
     @staticmethod
