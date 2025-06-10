@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from conversation.service import ConversationService
 from conversation.exception import ConversationNotFoundException
 from exception import RequiredColumnMissingException
-from .exception import NodeSavedFailedException
+from .exception import NodeSavedFailedException, NodeNotFoundException
 from .model import Node
 from .schema import NodeSchema
 
@@ -63,23 +63,31 @@ class NodeService:
         return node
     
     @staticmethod
-    async def update_node(db: AsyncSession, id: int, conversation_id, prompt, content, order) -> Node:
+    async def update_node(db: AsyncSession, id: int, **kargs) -> Node:
         """
         Update an existing node.
         """
-        sql = select(Node).where(Node.id == id)
-        result = await db.execute(sql)
-        node = result.scalar_one_or_none()
+        if not(node := await NodeService.get_node_by_id(db, id)):
+            message = f"id: {id}"
+            exception = NodeNotFoundException(message=message)
+            raise exception
 
-        if node is None:
-            raise ValueError("Node not found")
+        schema = NodeSchema()
+        data = schema.load(kargs)
+        for key, value in data.items():
+                setattr(node, key, value)
 
-        node.conversation_id = conversation_id
-        node.prompt = prompt
-        node.content = content
-        node.order = order
-        await db.commit()
-        await db.refresh(node)
+        try:
+            await db.commit()       # 提交到資料庫
+            await db.refresh(node)  # 更新對象資料（例如拿到自動產生的 ID）
+
+        except Exception as e:
+            await db.rollback()
+
+            message = f"error: {e}"
+            exception = NodeSavedFailedException(message=message)
+            raise exception
+
         return node
     
     @staticmethod
@@ -97,3 +105,13 @@ class NodeService:
         await db.delete(node)
         await db.commit()
         return None
+
+    @staticmethod
+    async def get_node_by_id(db: AsyncSession, id: int) -> Node:
+        """
+        Get a node by ID.
+        """
+        sql = select(Node).where(Node.id == id)
+        result = await db.execute(sql)
+        node = result.scalar_one_or_none()
+        return node
