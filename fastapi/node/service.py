@@ -8,7 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from conversation.service import ConversationService
 from conversation.exception import ConversationNotFoundException
 from exception import RequiredColumnMissingException
+from .exception import NodeSavedFailedException
 from .model import Node
+from .schema import NodeSchema
 
 class NodeService:
     @staticmethod
@@ -37,10 +39,27 @@ class NodeService:
             exception = ConversationNotFoundException(message=message)
             raise exception
 
-        node = Node(conversation_id=conversation_id, prompt=prompt, content=content, order=order)
-        db.add(node)           # 將對象加入 session
-        await db.commit()      # 提交到資料庫
-        await db.refresh(node)  # 更新對象資料（例如拿到自動產生的 ID）
+        schema = NodeSchema()
+        data = schema.load({
+            "conversation_id": conversation_id,
+            "prompt": prompt,
+            "content": content,
+            "order": order
+        })
+
+        node = Node(**data)
+        try:
+            db.add(node)            # 將對象加入 session
+            await db.commit()       # 提交到資料庫
+            await db.refresh(node)  # 更新對象資料（例如拿到自動產生的 ID）
+
+        except Exception as e:
+            await db.rollback()     # 回滾事務
+
+            message = f"error: {e}"
+            exception = NodeSavedFailedException(message=message)
+            raise exception
+
         return node
     
     @staticmethod
