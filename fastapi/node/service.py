@@ -5,6 +5,9 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from conversation.service import ConversationService
+from conversation.exception import ConversationNotFoundException
+from exception import RequiredColumnMissingException
 from .model import Node
 
 class NodeService:
@@ -24,6 +27,16 @@ class NodeService:
         """
         Create a new node.
         """
+        if not conversation_id or order is None:
+            message = f"conversation_id: {conversation_id}, order: {order}"
+            exception = RequiredColumnMissingException(message=message)
+            raise exception
+
+        if not(conversation := await ConversationService.get_conversation_by_id(db, conversation_id)):
+            message = f"conversation_id: {conversation_id}"
+            exception = ConversationNotFoundException(message=message)
+            raise exception
+
         node = Node(conversation_id=conversation_id, prompt=prompt, content=content, order=order)
         db.add(node)           # 將對象加入 session
         await db.commit()      # 提交到資料庫
