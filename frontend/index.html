@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>劇情編輯器</title>
   <style>
-    /* 全站通用 box-sizing 設定，避免排版炸裂 */
     *, *::before, *::after {
       box-sizing: border-box;
     }
@@ -109,13 +108,13 @@
       newBlock.id = `block-${blockCount}`;
       newBlock.innerHTML = `
         <div class="section">
-          <div class="section-title">User</div>
-          <div class="content-box" id="user-content-${blockCount}" contenteditable="true">（新增的 User 劇情）</div>
+          <div class="section-title">Prompt</div>
+          <div class="content-box" id="prompt-content-${blockCount}" contenteditable="true">（新增的 Prompt）</div>
         </div>
 
         <div class="section">
-          <div class="section-title">LLM</div>
-          <div class="content-box" id="llm-content-${blockCount}" contenteditable="true">（新增的 LLM 劇情）</div>
+          <div class="section-title">Content</div>
+          <div class="content-box" id="llm-content-${blockCount}" contenteditable="true">（新增的 Content）</div>
         </div>
 
         <div class="block-footer">
