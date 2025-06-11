@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <title>劇情編輯器</title>
   <style>
+    /* 全站通用 box-sizing 設定，避免排版炸裂 */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: "Helvetica Neue", Arial, sans-serif;
       background-color: #fafafa;
@@ -25,38 +30,27 @@
       margin-bottom: 30px;
     }
 
-    .section {
-      margin-bottom: 30px;
+    .block {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 25px;
+      background-color: #fff;
     }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
+    .section {
+      margin-bottom: 20px;
     }
 
     .section-title {
       font-weight: bold;
       font-size: 16px;
+      margin-bottom: 8px;
     }
 
-    .edit-button {
-      padding: 4px 10px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background-color: white;
-      cursor: pointer;
-    }
-
-    .edit-button:hover {
-      background-color: #f0f0f0;
-    }
-
-    .content-box,
-    textarea {
+    .content-box {
       width: 100%;
+      box-sizing: border-box;
       border: 1px solid #ccc;
       border-radius: 8px;
       padding: 12px;
@@ -64,81 +58,84 @@
       white-space: pre-wrap;
       font-size: 16px;
       line-height: 1.6;
+      outline: none;
     }
 
-    textarea {
-      resize: vertical;
-      height: 100px;
+    .content-box:focus {
+      border-color: #888;
+      background-color: #fcfcfc;
     }
 
-    .footer-buttons {
+    .block-footer {
       display: flex;
-      justify-content: center;
-      gap: 20px;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
     }
 
-    .footer-buttons button {
-      font-size: 16px;
-      padding: 6px 16px;
-      border-radius: 8px;
+    .block-footer button {
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 6px;
       border: 1px solid #ccc;
       background-color: white;
       cursor: pointer;
     }
 
-    .footer-buttons button:hover {
+    .block-footer button:hover {
       background-color: #f0f0f0;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>✏️ 劇情編輯器（MVP with API）</h1>
-
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">User</div>
-        <button class="edit-button" onclick="toggleEdit(this, 'user-content')">✏️ 編輯</button>
-      </div>
-      <div class="content-box" id="user-content">主角來到一座被迷霧籠罩的森林。</div>
-    </div>
-
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">LLM</div>
-        <button class="edit-button" onclick="toggleEdit(this, 'llm-content')">✏️ 編輯</button>
-      </div>
-      <div class="content-box" id="llm-content">他嚴受到一股詭異的氣息，彷彿有什麼在注視著他。</div>
-    </div>
-
-    <div class="footer-buttons">
-      <button>➕ 新增</button>
-      <button>🗑️ 刪除</button>
-    </div>
+  <div class="container" id="content-container">
+    <h1>✏️ 劇情編輯器（點擊文字框即可編輯）</h1>
   </div>
 
   <script>
-    function toggleEdit(button, contentId) {
-      const container = document.getElementById(contentId);
+    let blockCount = 0;
 
-      if (container.tagName === 'DIV') {
-        const text = container.innerText;
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.id = contentId;
-        container.replaceWith(textarea);
-        button.innerText = '💾 儲存';
+    function deleteBlock(blockId) {
+      const block = document.getElementById(blockId);
+      if (block) block.remove();
+    }
+
+    function addBlock(afterElement = null) {
+      blockCount++;
+
+      const newBlock = document.createElement('div');
+      newBlock.className = 'block';
+      newBlock.id = `block-${blockCount}`;
+      newBlock.innerHTML = `
+        <div class="section">
+          <div class="section-title">User</div>
+          <div class="content-box" id="user-content-${blockCount}" contenteditable="true">（新增的 User 劇情）</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">LLM</div>
+          <div class="content-box" id="llm-content-${blockCount}" contenteditable="true">（新增的 LLM 劇情）</div>
+        </div>
+
+        <div class="block-footer">
+          <button onclick="addBlock(document.getElementById('block-${blockCount}'))">➕ 新增</button>
+          <button onclick="deleteBlock('block-${blockCount}')">✂️ 刪除</button>
+        </div>
+      `;
+
+      const container = document.getElementById('content-container');
+      if (afterElement) {
+        container.insertBefore(newBlock, afterElement.nextSibling);
       } else {
-        const newText = container.value;
-        const div = document.createElement('div');
-        div.className = 'content-box';
-        div.id = contentId;
-        div.innerText = newText;
-        container.replaceWith(div);
-        button.innerText = '✏️ 編輯';
+        container.appendChild(newBlock);
       }
     }
+
+    // 初始載入第一個區塊
+    window.onload = () => {
+      addBlock();
+    };
   </script>
 
 </body>
