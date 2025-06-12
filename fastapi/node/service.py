@@ -7,10 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from conversation.service import ConversationService
 from conversation.exception import ConversationNotFoundException
+from ext.openai.service import OpenaiService
 from exception import RequiredColumnMissingException
+from .const import prompt_message_1, prompt_message_2, prompt_message_3
 from .exception import NodeSavedFailedException, NodeNotFoundException
 from .model import Node
-from .schema import NodeSchema
+from .schema import NodeSchema, CreateNodeSchema
 
 class NodeService:
     @staticmethod
@@ -25,12 +27,21 @@ class NodeService:
         return nodes
 
     @staticmethod
-    async def create_node(db: AsyncSession, conversation_id, prompt, content, order) -> Node:
+    async def create_node(db: AsyncSession, **kwargs) -> Node:
         """
         Create a new node.
         """
-        if not conversation_id or order is None:
-            message = f"conversation_id: {conversation_id}, order: {order}"
+
+        schema = CreateNodeSchema()
+        data = schema.load(kwargs)
+        conversation_id = data.get("conversation_id")
+        prompt = data.get("prompt")
+        content = data.get("content")
+        last_node_id = data.get("last_node_id")
+        next_node_id = data.get("next_node_id")
+
+        if not conversation_id:
+            message = f"conversation_id: {conversation_id}"
             exception = RequiredColumnMissingException(message=message)
             raise exception
 
@@ -39,14 +50,32 @@ class NodeService:
             exception = ConversationNotFoundException(message=message)
             raise exception
 
-        schema = NodeSchema()
-        data = schema.load({
-            "conversation_id": conversation_id,
-            "prompt": prompt,
-            "content": content,
-            "order": order
-        })
+        last_node = await NodeService.get_node_by_id(db, last_node_id)
+        next_node = await NodeService.get_node_by_id(db, next_node_id)
+        if not last_node and not next_node:
+            order = 1
+            prompt_message = prompt_message_1.format(user_prompt=prompt)
 
+        elif last_node and not next_node:
+            order = last_node.order + 1
+            prompt_message = prompt_message_2.format(user_prompt=prompt, last_content=last_node.content)
+
+        elif last_node and next_node:
+            order = (last_node.order + next_node.order) / 2
+            prompt_message = prompt_message_3.format(
+                user_prompt=prompt,
+                last_content=last_node.content,
+                next_content=next_node.content
+            )
+
+        if not content:
+            content = await OpenaiService.get_completion(prompt_message)  # 呼叫 OpenAI API 獲取回應
+
+        data['order'] = order
+        data['content'] = str(content)
+
+        schema = NodeSchema()
+        data = schema.load(data)
         node = Node(**data)
         try:
             db.add(node)            # 將對象加入 session

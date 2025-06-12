@@ -24,7 +24,9 @@ async def create_node(
             'conversation_id': 1,
             'prompt': 'it should be a story',
             'content': 'this is a content',
-            'order': 1
+            'order': 1,
+            'last_node_id': None,
+            'next_node_id': None
         }),
         db: AsyncSession = Depends(get_db)
     ):
@@ -32,11 +34,7 @@ async def create_node(
     post node api
     """
 
-    conversation_id = schema.get('conversation_id')
-    prompt = schema.get('prompt')
-    content = schema.get('content')
-    order = schema.get('order')
-    result = await NodeService.create_node(db, conversation_id=conversation_id, prompt=prompt, content=content, order=order)
+    result = await NodeService.create_node(db, **schema)
     return result
 
 @router.patch("/{node_id}")
